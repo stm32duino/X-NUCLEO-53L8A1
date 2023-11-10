@@ -91,7 +91,7 @@ void setup()
   SerialPort.begin(460800);
   
   // Initialize SPI bus.
-  DEV_SPI.begin(CS_PIN);
+  DEV_SPI.begin();
 
   // Set interrupt pin
   pinMode(INT_PIN, INPUT_PULLUP);

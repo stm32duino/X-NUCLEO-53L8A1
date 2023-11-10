@@ -85,7 +85,7 @@ void setup()
   SerialPort.begin(460800);
 
   // Initialize SPI bus.
-  DEV_SPI.begin(CS_PIN);
+  DEV_SPI.begin();
 
   // Enable PWREN top pin if present
   if (PWREN_TOP_PIN >= 0) {
