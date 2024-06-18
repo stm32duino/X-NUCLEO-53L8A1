@@ -64,15 +64,17 @@
 #define SPI_CLK_PIN 3
 #define SPI_MISO_PIN  5
 #define SPI_MOSI_PIN 4
-#define CS_PIN 10
+#define CS_TOP_PIN 10
+#define CS_LEFT_PIN A4
+#define CS_RIGHT_PIN 7
 
 SPIClass DEV_SPI(SPI_MOSI_PIN, SPI_MISO_PIN, SPI_CLK_PIN);
 
 // Components.
-VL53L8CX sensor_vl53l8cx_top(&DEV_SPI, CS_PIN,LPN_TOP_PIN);
+VL53L8CX sensor_vl53l8cx_top(&DEV_SPI, CS_TOP_PIN, LPN_TOP_PIN);
 #ifdef SATELLITES_MOUNTED
-  VL53L8CX sensor_vl53l8cx_left(&DEV_SPI,CS_PIN, LPN_LEFT_PIN);
-  VL53L8CX sensor_vl53l8cx_right(&DEV_SPI,CS_PIN, LPN_RIGHT_PIN);
+  VL53L8CX sensor_vl53l8cx_left(&DEV_SPI, CS_LEFT_PIN, LPN_LEFT_PIN);
+  VL53L8CX sensor_vl53l8cx_right(&DEV_SPI, CS_RIGHT_PIN, LPN_RIGHT_PIN);
 #endif
 
 uint8_t status;
