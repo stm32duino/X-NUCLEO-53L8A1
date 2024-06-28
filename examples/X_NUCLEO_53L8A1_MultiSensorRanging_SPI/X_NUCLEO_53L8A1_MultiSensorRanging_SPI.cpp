@@ -107,17 +107,11 @@ void setup()
 
   // Configure VL53L8CX top component.
   sensor_vl53l8cx_top.begin();
-  // Switch off VL53L8CX top component.
-  sensor_vl53l8cx_top.off();
 #ifdef SATELLITES_MOUNTED
   // Configure (if present) VL53L8CX left component.
   sensor_vl53l8cx_left.begin();
-  //Switch off (if present) VL53L8CX left component.
-  sensor_vl53l8cx_left.off();
   // Configure (if present) VL53L8CX right component.
   sensor_vl53l8cx_right.begin();
-  // Switch off (if present) VL53L8CX right component.
-  sensor_vl53l8cx_right.off();
 #endif
 
   //Initialize all the sensors
