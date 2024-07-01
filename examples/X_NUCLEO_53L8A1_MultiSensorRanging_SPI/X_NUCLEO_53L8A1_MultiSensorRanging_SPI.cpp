@@ -2,8 +2,8 @@
  ******************************************************************************
  * @file    X_NUCLEO_53L8A1_MultiSensorRanging_SPI.ino
  * @author  STMicroelectronics
- * @version V1.0.0
- * @date    16 January 2023
+ * @version V2.0.0
+ * @date    27 June 2024
  * @brief   Arduino test application for the X-NUCLEO-53L7A1 based on VL53L8CX
  *          proximity sensor.
  *          This application makes use of C++ classes obtained from the C
@@ -11,7 +11,7 @@
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; COPYRIGHT(c) 2021 STMicroelectronics</center></h2>
+ * <h2><center>&copy; COPYRIGHT(c) 2024 STMicroelectronics</center></h2>
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -40,41 +40,35 @@
 /* To use the X_NUCLEO_53L8A1 in SPI mode J7, J8, J9 jumpers must be on SPI.*/
 
 /* Includes ------------------------------------------------------------------*/
-#include <Arduino.h>
-#include <SPI.h>
-#include <vl53l8cx_class.h>
+
+#include <vl53l8cx.h>
 
 #define SerialPort Serial
 
 /* Please uncomment the line below if you want also to use the satellites */
 #define SATELLITES_MOUNTED
 
-#define LPN_TOP_PIN A3
 #define PWREN_TOP_PIN 11
-
-#ifdef SATELLITES_MOUNTED
-  #define LPN_LEFT_PIN A0
-  #define PWREN_LEFT_PIN 6
-  
-  #define LPN_RIGHT_PIN 13  
-  #define PWREN_RIGHT_PIN 12
-#endif
-
 
 #define SPI_CLK_PIN 3
 #define SPI_MISO_PIN  5
 #define SPI_MOSI_PIN 4
 #define CS_TOP_PIN 10
-#define CS_LEFT_PIN A4
-#define CS_RIGHT_PIN 7
+
+#ifdef SATELLITES_MOUNTED
+  #define PWREN_LEFT_PIN 6
+  #define PWREN_RIGHT_PIN 12
+  #define CS_LEFT_PIN A4
+  #define CS_RIGHT_PIN 7
+#endif
 
 SPIClass DEV_SPI(SPI_MOSI_PIN, SPI_MISO_PIN, SPI_CLK_PIN);
 
 // Components.
-VL53L8CX sensor_vl53l8cx_top(&DEV_SPI, CS_TOP_PIN, LPN_TOP_PIN);
+VL53L8CX sensor_vl53l8cx_top(&DEV_SPI, CS_TOP_PIN);
 #ifdef SATELLITES_MOUNTED
-  VL53L8CX sensor_vl53l8cx_left(&DEV_SPI, CS_LEFT_PIN, LPN_LEFT_PIN);
-  VL53L8CX sensor_vl53l8cx_right(&DEV_SPI, CS_RIGHT_PIN, LPN_RIGHT_PIN);
+  VL53L8CX sensor_vl53l8cx_left(&DEV_SPI, CS_LEFT_PIN);
+  VL53L8CX sensor_vl53l8cx_right(&DEV_SPI, CS_RIGHT_PIN);
 #endif
 
 uint8_t status;
@@ -113,31 +107,25 @@ void setup()
 
   // Configure VL53L8CX top component.
   sensor_vl53l8cx_top.begin();
-  // Switch off VL53L8CX top component.
-  sensor_vl53l8cx_top.vl53l8cx_off();
 #ifdef SATELLITES_MOUNTED
   // Configure (if present) VL53L8CX left component.
   sensor_vl53l8cx_left.begin();
-  //Switch off (if present) VL53L8CX left component.
-  sensor_vl53l8cx_left.vl53l8cx_off();
   // Configure (if present) VL53L8CX right component.
   sensor_vl53l8cx_right.begin();
-  // Switch off (if present) VL53L8CX right component.
-  sensor_vl53l8cx_right.vl53l8cx_off();
 #endif
 
   //Initialize all the sensors
-  status=sensor_vl53l8cx_top.init_sensor();  
+  status = status = sensor_vl53l8cx_top.init();
 #ifdef SATELLITES_MOUNTED
-  status=sensor_vl53l8cx_left.init_sensor();
-  status=sensor_vl53l8cx_right.init_sensor();
+  status = status = sensor_vl53l8cx_left.init();
+  status = status = sensor_vl53l8cx_right.init();
 #endif
 
   // Start Measurements
-  status=sensor_vl53l8cx_top.vl53l8cx_start_ranging();
+  status = status = sensor_vl53l8cx_top.start_ranging();
 #ifdef SATELLITES_MOUNTED
-   status=sensor_vl53l8cx_left.vl53l8cx_start_ranging();
-   status=sensor_vl53l8cx_right.vl53l8cx_start_ranging();
+  status = status = sensor_vl53l8cx_left.start_ranging();
+  status = status = sensor_vl53l8cx_right.start_ranging();
 #endif
 }
 
@@ -146,15 +134,13 @@ void loop()
   VL53L8CX_ResultsData results;
   uint8_t NewDataReady = 0;
   char report[128];
-  uint8_t status;
-  
   do {
-    status = sensor_vl53l8cx_top.vl53l8cx_check_data_ready(&NewDataReady);
+    status = sensor_vl53l8cx_top.check_data_ready(&NewDataReady);
   } while (!NewDataReady);
 
   if ((!status) && (NewDataReady != 0)) {
     // Read measured distance. RangeStatus = 5 and 9 means valid data
-    sensor_vl53l8cx_top.vl53l8cx_get_ranging_data(&results);
+    status = sensor_vl53l8cx_top.get_ranging_data(&results);
 
     snprintf(report, sizeof(report), "VL53L8CX Top: Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
              results.target_status[0],
@@ -167,13 +153,13 @@ void loop()
   NewDataReady = 0;
 
   do {
-    status = sensor_vl53l8cx_left.vl53l8cx_check_data_ready(&NewDataReady);
+    status = sensor_vl53l8cx_left.check_data_ready(&NewDataReady);
   } while (!NewDataReady);
 
 
   if ((!status) && (NewDataReady != 0)) {
     // Read measured distance. RangeStatus = 5 and 9 means valid data
-    sensor_vl53l8cx_left.vl53l8cx_get_ranging_data(&results);
+    status = sensor_vl53l8cx_left.get_ranging_data(&results);
     snprintf(report, sizeof(report), "VL53L8CX Left: Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
              results.target_status[0],
              results.distance_mm[0],
@@ -183,12 +169,12 @@ void loop()
 
   NewDataReady = 0;
   do {
-    status = sensor_vl53l8cx_right.vl53l8cx_check_data_ready(&NewDataReady);
+    status = sensor_vl53l8cx_right.check_data_ready(&NewDataReady);
   } while (!NewDataReady);
 
   if ((!status) && (NewDataReady != 0)) {
     // Read measured distance. RangeStatus = 5 and 9 means valid data
-    sensor_vl53l8cx_right.vl53l8cx_get_ranging_data(&results);
+    status = sensor_vl53l8cx_right.get_ranging_data(&results);
     snprintf(report, sizeof(report), "VL53L8CX Right: Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
              results.target_status[0],
              results.distance_mm[0],
